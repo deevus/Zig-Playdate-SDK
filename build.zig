@@ -81,6 +81,8 @@ pub fn build(b: *std.Build) !void {
     clean_step.dependOn(b.getUninstallStep());
     clean_step.dependOn(&b.addRemoveDirTree("zig-cache").step);
     clean_step.dependOn(&b.addRemoveDirTree("zig-out").step);
+
+    _ = b.addModule("playdate", .{ .root_source_file = std.Build.LazyPath.relative("src/sdk/playdate.zig") });
 }
 
 pub fn addCopyDirectory(
