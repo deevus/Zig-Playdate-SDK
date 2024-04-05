@@ -5,7 +5,7 @@ const pd = @import("./sdk/playdate.zig");
 const ExampleGlobalState = struct {
     playdate: *pdapi.PlaydateAPI,
     playdate_image: *pdapi.LCDBitmap,
-    message: [*c]u8,
+    message: ?[]u8,
 };
 
 var global_state: *ExampleGlobalState = undefined;
@@ -26,21 +26,31 @@ pub export fn eventHandler(playdate: *pdapi.PlaydateAPI, event: pdapi.PDSystemEv
             array_list.append(1) catch unreachable;
             array_list.append(2) catch unreachable;
             array_list.append(3) catch unreachable;
+            // array_list.append(4) catch unreachable;
             _ = array_list.swapRemove(0);
             defer array_list.deinit();
 
-            // const message = allocator.alloc(u8, 16) catch undefined;
-            // _ = std.fmt.bufPrintZ(message, "Count: {}", .{array_list.items.len}) catch {};
-            var message: [*c]u8 = undefined;
+            const message = allocator.alloc(u8, 16) catch {
+                playdate.system.logToConsole("Error allocating memory");
 
-            _ = playdate.system.formatString(&message, "Count: %d", array_list.items.len);
+                return 1;
+            };
+
+            const result = std.fmt.bufPrintZ(message, "Count: {}", .{array_list.items.len}) catch {
+                playdate.system.logToConsole("Error writing message");
+
+                return 1;
+            };
+
+            // var message: [*c]u8 = undefined;
+            // _ = playdate.system.formatString(&message, "Count: %d", array_list.items.len);
 
             global_state = allocator.create(ExampleGlobalState) catch unreachable;
 
             global_state.* = .{
                 .playdate = playdate,
                 .playdate_image = playdate_image,
-                .message = message,
+                .message = result,
             };
 
             playdate.system.setUpdateCallback(updateAndRender, global_state);
@@ -58,7 +68,7 @@ fn updateAndRender(_: ?*anyopaque) callconv(.C) c_int {
     const message = global_state.message;
 
     playdate.graphics.clear(@intFromEnum(pdapi.LCDSolidColor.ColorWhite));
-    const pixel_width = playdate.graphics.drawText(message, 16, .UTF8Encoding, 0, 0);
+    const pixel_width = playdate.graphics.drawText(message.?.ptr, message.?.len, .UTF8Encoding, 0, 0);
     _ = pixel_width;
     playdate.graphics.drawBitmap(playdate_image, pdapi.LCD_COLUMNS / 2 - 16, pdapi.LCD_ROWS / 2 - 16, .BitmapUnflipped);
 
