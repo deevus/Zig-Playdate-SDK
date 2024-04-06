@@ -16,7 +16,7 @@ pub const PlaydateAllocator = struct {
             .ptr = self,
             .vtable = &.{
                 .alloc = alloc,
-                .resize = resize,
+                .resize = Allocator.noResize,
                 .free = free,
             },
         };
