@@ -1,10 +1,9 @@
 const std = @import("std");
 const pdapi = @import("playdate_api_definitions.zig");
+const math = @import("math.zig");
 
-pub const Vector2 = struct {
-    x: i32,
-    y: i32,
-};
+const Vector2i = math.Vector2i;
+const Vector2 = math.Vector2;
 
 pub const Bitmap = struct {
     api: *const pdapi.PlaydateGraphics,
@@ -23,6 +22,26 @@ pub const Bitmap = struct {
     }
 };
 
+const ClearScreenOptions = union(enum) {
+    color: pdapi.LCDSolidColor,
+    pattern: *pdapi.LCDPattern,
+};
+
+const DrawCircleParameters = struct {
+    position: Vector2i,
+    radius: ?i32 = 1,
+    color: pdapi.LCDSolidColor = .ColorBlack,
+};
+
+const DrawLinesParameters = struct {
+    origin: Vector2i,
+    scale: f32,
+    rotation: f32,
+    points: []const Vector2,
+    connect: bool = true,
+    thickness: i32 = 1,
+};
+
 pub const PlaydateGraphics = struct {
     api: *const pdapi.PlaydateGraphics,
     text_encoding: pdapi.PDStringEncoding = .UTF8Encoding,
@@ -33,25 +52,14 @@ pub const PlaydateGraphics = struct {
         };
     }
 
-    fn clearInternal(self: @This(), comptime color_or_pattern: anytype) void {
-        switch (@TypeOf(color_or_pattern)) {
-            pdapi.LCDSolidColor => self.api.clear(@intCast(@intFromEnum(color_or_pattern))),
-            c_int => self.api.clear(@intCast(color_or_pattern)),
-            else => {
-                @compileError("Invalid type passed to clear");
-            },
+    pub fn clear(self: @This(), comptime clear_option: ClearScreenOptions) void {
+        switch (clear_option) {
+            .color => |color| self.api.clear(@intCast(@intFromEnum(color))),
+            .pattern => |pattern| self.api.clear(@intFromPtr(pattern)),
         }
     }
 
-    pub fn clear(self: @This(), comptime color: pdapi.LCDSolidColor) void {
-        self.clearInternal(color);
-    }
-
-    pub fn clearPattern(self: @This(), comptime pattern: pdapi.LCDPattern) void {
-        self.clearInternal(@intFromPtr(&pattern));
-    }
-
-    pub fn drawText(self: @This(), message: []const u8, pos: Vector2) void {
+    pub fn drawText(self: @This(), message: []const u8, pos: Vector2i) void {
         _ = self.api.drawText(message.ptr, message.len, self.text_encoding, pos.x, pos.y);
     }
 
@@ -59,7 +67,40 @@ pub const PlaydateGraphics = struct {
         return Bitmap.init(self.api, file_path);
     }
 
-    pub fn drawBitmap(self: @This(), bitmap: Bitmap, pos: Vector2) void {
+    pub fn drawBitmap(self: @This(), bitmap: Bitmap, pos: Vector2i) void {
         self.api.drawBitmap(bitmap.bitmap, pos.x, pos.y, bitmap.flip);
+    }
+
+    pub fn drawCircle(self: @This(), params: DrawCircleParameters) void {
+        const circumference = if (params.radius) |r| r * 2 else 2;
+
+        self.api.fillEllipse(params.position.x, params.position.y, circumference, circumference, 0, 360, @intFromEnum(pdapi.LCDSolidColor.ColorWhite));
+    }
+
+    pub fn drawLines(self: @This(), params: DrawLinesParameters) void {
+        const Transformer = struct {
+            org: Vector2,
+            scale: f32,
+            rot: f32,
+
+            fn apply(tr: @This(), p: Vector2) Vector2 {
+                return p.rotate(tr.rot).scale(tr.scale).add(tr.org);
+            }
+        };
+
+        const t = Transformer{
+            .org = params.origin.toVector2(),
+            .scale = params.scale,
+            .rot = params.rotation,
+        };
+
+        const points = params.points;
+        const bound = if (params.connect) points.len else (points.len - 1);
+        for (0..bound) |i| {
+            const v0 = t.apply(points[i]).toVector2i();
+            const v1 = t.apply(points[(i + 1) % points.len]).toVector2i();
+
+            self.api.drawLine(v0.x, v0.y, v1.x, v1.y, params.thickness, @intFromEnum(pdapi.LCDSolidColor.ColorWhite));
+        }
     }
 };

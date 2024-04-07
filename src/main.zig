@@ -3,13 +3,13 @@ const pdapi = @import("./sdk/playdate_api_definitions.zig");
 const pd = @import("./sdk/playdate.zig");
 const Playdate = pd.Playdate;
 
-const ExampleGlobalState = struct {
+const State = struct {
     playdate: Playdate,
     playdate_image: pd.graphics.Bitmap,
     message: []const u8,
 };
 
-var global_state: *ExampleGlobalState = undefined;
+var state: *State = undefined;
 
 pub export fn eventHandler(handle: *pdapi.PlaydateAPI, event: pdapi.PDSystemEvent, arg: u32) callconv(.C) c_int {
     _ = arg;
@@ -35,15 +35,15 @@ pub export fn eventHandler(handle: *pdapi.PlaydateAPI, event: pdapi.PDSystemEven
             const message = allocator.alloc(u8, 16) catch undefined;
             _ = std.fmt.bufPrintZ(message, "Count: {}", .{array_list.items.len}) catch {};
 
-            global_state = allocator.create(ExampleGlobalState) catch unreachable;
+            state = allocator.create(State) catch unreachable;
 
-            global_state.* = .{
+            state.* = .{
                 .playdate = playdate,
                 .playdate_image = playdate_image,
                 .message = message,
             };
 
-            handle.system.setUpdateCallback(updateAndRender, global_state);
+            handle.system.setUpdateCallback(updateAndRender, state);
         },
         else => {},
     }
@@ -51,11 +51,11 @@ pub export fn eventHandler(handle: *pdapi.PlaydateAPI, event: pdapi.PDSystemEven
 }
 
 fn updateAndRender(_: ?*anyopaque) callconv(.C) c_int {
-    const playdate = global_state.playdate;
-    const playdate_image = global_state.playdate_image;
-    const message = global_state.message;
+    const playdate = state.playdate;
+    const playdate_image = state.playdate_image;
+    const message = state.message;
 
-    playdate.graphics.clear(.ColorWhite);
+    playdate.graphics.clear(.{ .color = .ColorWhite });
     playdate.graphics.drawText(message, .{ .x = 0, .y = 0 });
     playdate.graphics.drawBitmap(playdate_image, .{ .x = pdapi.LCD_COLUMNS / 2 - 16, .y = pdapi.LCD_ROWS / 2 - 16 });
 
