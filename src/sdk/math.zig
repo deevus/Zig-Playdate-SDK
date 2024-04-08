@@ -41,8 +41,10 @@ pub const Vector2 = struct {
     pub fn toVector2i(self: @This()) Vector2i {
         const x = @round(self.x);
         const y = @round(self.y);
-        const xi: i32 = @intFromFloat(x);
-        const yi: i32 = @intFromFloat(y);
+
+        const xi = std.math.lossyCast(i32, x);
+        const yi = std.math.lossyCast(i32, y);
+
         return Vector2i.init(xi, yi);
     }
 };

@@ -5,6 +5,16 @@ const math = @import("math.zig");
 const Vector2i = math.Vector2i;
 const Vector2 = math.Vector2;
 
+const Transformer = struct {
+    org: Vector2,
+    scale: f32,
+    rot: f32,
+
+    fn apply(tr: @This(), p: Vector2) Vector2 {
+        return p.rotate(tr.rot).scale(tr.scale).add(tr.org);
+    }
+};
+
 pub const Bitmap = struct {
     api: *const pdapi.PlaydateGraphics,
     bitmap: *pdapi.LCDBitmap,
@@ -34,7 +44,7 @@ const DrawCircleParameters = struct {
 };
 
 const DrawLinesParameters = struct {
-    origin: Vector2i,
+    origin: Vector2,
     scale: f32,
     rotation: f32,
     points: []const Vector2,
@@ -78,18 +88,8 @@ pub const PlaydateGraphics = struct {
     }
 
     pub fn drawLines(self: @This(), params: DrawLinesParameters) void {
-        const Transformer = struct {
-            org: Vector2,
-            scale: f32,
-            rot: f32,
-
-            fn apply(tr: @This(), p: Vector2) Vector2 {
-                return p.rotate(tr.rot).scale(tr.scale).add(tr.org);
-            }
-        };
-
         const t = Transformer{
-            .org = params.origin.toVector2(),
+            .org = params.origin,
             .scale = params.scale,
             .rot = params.rotation,
         };
