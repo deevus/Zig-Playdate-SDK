@@ -5,9 +5,9 @@ const Allocator = std.mem.Allocator;
 const pd = @import("playdate.zig");
 
 pub const PlaydateAllocator = struct {
-    api: *const pdapi.PlaydateAPI,
+    api: *const pdapi.PlaydateSys,
 
-    pub fn init(api: *const pdapi.PlaydateAPI) PlaydateAllocator {
+    pub fn init(api: *const pdapi.PlaydateSys) PlaydateAllocator {
         return .{ .api = api };
     }
 
@@ -16,7 +16,7 @@ pub const PlaydateAllocator = struct {
             .ptr = self,
             .vtable = &.{
                 .alloc = alloc,
-                .resize = Allocator.noResize,
+                .resize = resize,
                 .free = free,
             },
         };
@@ -34,7 +34,7 @@ pub const PlaydateAllocator = struct {
         const self: *PlaydateAllocator = @alignCast(@ptrCast(ctx));
 
         // No need for manual alignment calculation as playdate.system.realloc handles it.
-        const ptr = self.api.system.realloc(null, n); // Allocating new memory
+        const ptr = self.api.realloc(null, n); // Allocating new memory
 
         if (ptr == null) return null;
 
@@ -42,17 +42,13 @@ pub const PlaydateAllocator = struct {
     }
 
     fn resize(
-        ctx: *anyopaque,
+        _: *anyopaque,
         buf: []u8,
         _: u8,
         new_size: usize,
         _: usize,
     ) bool {
-        const self: *PlaydateAllocator = @alignCast(@ptrCast(ctx));
-
-        _ = self.api.system.realloc(buf.ptr, new_size);
-        // It's assumed that the consumer of this API will handle the returned pointer correctly.
-        return true; // Return true on successful resize.
+        return new_size <= buf.len;
     }
 
     fn free(
@@ -63,6 +59,18 @@ pub const PlaydateAllocator = struct {
     ) void {
         const self: *PlaydateAllocator = @alignCast(@ptrCast(ctx));
 
-        _ = self.api.system.realloc(buf.ptr, 0); // Intentionally ignore the return value as we're freeing memory.
+        _ = self.api.realloc(buf.ptr, 0);
+    }
+};
+
+pub const Memory = struct {
+    api: *const pdapi.PlaydateSys,
+    pd_allocator: PlaydateAllocator,
+
+    pub fn init(api: *const pdapi.PlaydateSys) Memory {
+        return .{
+            .api = api,
+            .pd_allocator = PlaydateAllocator.init(api),
+        };
     }
 };
