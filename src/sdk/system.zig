@@ -12,4 +12,20 @@ pub const System = struct {
     pub fn drawFps(self: @This(), position: Vector2i) void {
         self.api.drawFPS(position.x, position.y);
     }
+
+    pub fn isButtonDown(self: @This(), button: pdapi.PDButtons) bool {
+        var down: pdapi.PDButtons = 0;
+
+        self.api.getButtonState(&down, null, null);
+
+        return down & button != 0;
+    }
+
+    pub fn isButtonPressed(self: @This(), button: pdapi.PDButtons) bool {
+        var pressed: pdapi.PDButtons = 0;
+
+        self.api.getButtonState(null, &pressed, null);
+
+        return pressed & button != 0;
+    }
 };
