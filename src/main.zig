@@ -9,6 +9,8 @@ const State = struct {
     message: []const u8,
 };
 
+var buffer: [1024 * 1024 * 16]u8 = undefined;
+
 var state: *State = undefined;
 
 pub export fn eventHandler(handle: *pdapi.PlaydateAPI, event: pdapi.PDSystemEvent, arg: u32) callconv(.C) c_int {
@@ -21,8 +23,8 @@ pub export fn eventHandler(handle: *pdapi.PlaydateAPI, event: pdapi.PDSystemEven
             const font = handle.graphics.loadFont("/System/Fonts/Asheville-Sans-14-Bold.pft", null).?;
             handle.graphics.setFont(font);
 
-            var playdate_allocator = playdate.allocator;
-            var arena = std.heap.ArenaAllocator.init(playdate_allocator.allocator());
+            var fba = std.heap.FixedBufferAllocator.init(&buffer);
+            var arena = std.heap.ArenaAllocator.init(fba.allocator());
             var allocator = arena.allocator();
 
             var array_list = std.ArrayList(u8).init(allocator);

@@ -25,9 +25,12 @@ pub const PlaydateAllocator = struct {
     fn alloc(
         ctx: *anyopaque,
         n: usize,
-        _: u8,
-        _: usize,
+        ptr_align: u8,
+        return_address: usize,
     ) ?[*]u8 {
+        _ = ptr_align;
+        _ = return_address;
+
         const self: *PlaydateAllocator = @alignCast(@ptrCast(ctx));
 
         // No need for manual alignment calculation as playdate.system.realloc handles it.
@@ -35,7 +38,7 @@ pub const PlaydateAllocator = struct {
 
         if (ptr == null) return null;
 
-        return @alignCast(@ptrCast(ptr));
+        return @ptrCast(ptr);
     }
 
     fn resize(

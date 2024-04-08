@@ -39,7 +39,11 @@ pub const Vector2 = struct {
     }
 
     pub fn toVector2i(self: @This()) Vector2i {
-        return Vector2i.init(@intFromFloat(std.math.round(self.x)), @intFromFloat(std.math.round(self.y)));
+        const x = @round(self.x);
+        const y = @round(self.y);
+        const xi: i32 = @intFromFloat(x);
+        const yi: i32 = @intFromFloat(y);
+        return Vector2i.init(xi, yi);
     }
 };
 
