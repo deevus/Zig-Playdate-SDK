@@ -1,3 +1,4 @@
+const std = @import("std");
 const pdapi = @import("playdate_api_definitions.zig");
 
 pub const PlaydateSound = struct {
@@ -7,7 +8,7 @@ pub const PlaydateSound = struct {
         return .{ .sound_api = sound_api };
     }
 
-    pub fn loadSample(self: @This(), file_path: [:0]const u8) PlaydateSamplePlayer {
+    pub fn loadSample(self: @This(), comptime file_path: [:0]const u8) PlaydateSamplePlayer {
         var sample_player = PlaydateSamplePlayer.init(self.sound_api);
         sample_player.loadPath(file_path);
         return sample_player;
@@ -41,7 +42,7 @@ pub const PlaydateSamplePlayer = struct {
         self.sound_api.sampleplayer.setSample(self.sample_player, sample.sample);
     }
 
-    pub fn loadPath(self: *@This(), file_path: [:0]const u8) void {
+    pub fn loadPath(self: *@This(), comptime file_path: [:0]const u8) void {
         const sample = PlaydateSoundSample.init(self.sound_api, file_path);
 
         self.load(sample);
@@ -56,10 +57,14 @@ pub const PlaydateSoundSample = struct {
     sound_api: *const pdapi.PlaydateSound,
     sample: *pdapi.AudioSample,
 
-    pub fn init(sound_api: *const pdapi.PlaydateSound, file_path: [:0]const u8) PlaydateSoundSample {
+    pub fn init(sound_api: *const pdapi.PlaydateSound, comptime file_path: [:0]const u8) PlaydateSoundSample {
+        const sample: *pdapi.AudioSample = if (sound_api.sample.load(file_path)) |sample| sample else {
+            @panic("No access or does not exist: " ++ file_path);
+        };
+
         return .{
             .sound_api = sound_api,
-            .sample = sound_api.sample.load(file_path).?,
+            .sample = sample,
         };
     }
 
