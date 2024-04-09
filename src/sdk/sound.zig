@@ -6,6 +6,12 @@ pub const PlaydateSound = struct {
     pub fn init(sound_api: *const pdapi.PlaydateSound) PlaydateSound {
         return .{ .sound_api = sound_api };
     }
+
+    pub fn loadSample(self: @This(), file_path: [:0]const u8) PlaydateSamplePlayer {
+        var sample_player = PlaydateSamplePlayer.init(self.sound_api);
+        sample_player.loadPath(file_path);
+        return sample_player;
+    }
 };
 
 pub const PlaydateSamplePlayer = struct {
@@ -35,14 +41,14 @@ pub const PlaydateSamplePlayer = struct {
         self.sound_api.sampleplayer.setSample(self.sample_player, sample.sample);
     }
 
-    pub fn loadPath(self: *@This(), file_path: []const u8) void {
+    pub fn loadPath(self: *@This(), file_path: [:0]const u8) void {
         const sample = PlaydateSoundSample.init(self.sound_api, file_path);
 
         self.load(sample);
     }
 
     pub fn play(self: @This()) void {
-        self.sound_api.sampleplayer.play(self.sample_player, self.repeat, self.rate);
+        _ = self.sound_api.sampleplayer.play(self.sample_player, self.repeat, self.rate);
     }
 };
 
@@ -50,14 +56,14 @@ pub const PlaydateSoundSample = struct {
     sound_api: *const pdapi.PlaydateSound,
     sample: *pdapi.AudioSample,
 
-    pub fn init(sound_api: *const pdapi.PlaydateSound, file_path: []const u8) PlaydateSamplePlayer {
+    pub fn init(sound_api: *const pdapi.PlaydateSound, file_path: [:0]const u8) PlaydateSoundSample {
         return .{
             .sound_api = sound_api,
             .sample = sound_api.sample.load(file_path).?,
         };
     }
 
-    pub fn deinit(self: *@This()) void {
+    pub fn deinit(self: @This()) void {
         self.sound_api.sample.freeSample(self.sample);
     }
 };
