@@ -43,6 +43,13 @@ const DrawCircleParameters = struct {
     color: pdapi.LCDSolidColor = .ColorBlack,
 };
 
+const DrawLineParameters = struct {
+    start: Vector2i,
+    end: Vector2i,
+    color: pdapi.LCDSolidColor = .ColorBlack,
+    thickness: i32 = 1,
+};
+
 const DrawLinesParameters = struct {
     origin: Vector2,
     scale: f32,
@@ -50,6 +57,7 @@ const DrawLinesParameters = struct {
     points: []const Vector2,
     connect: bool = true,
     thickness: i32 = 1,
+    color: pdapi.LCDSolidColor = .ColorBlack,
 };
 
 pub const PlaydateGraphics = struct {
@@ -87,6 +95,10 @@ pub const PlaydateGraphics = struct {
         self.api.fillEllipse(params.position.x, params.position.y, circumference, circumference, 0, 360, @intFromEnum(pdapi.LCDSolidColor.ColorWhite));
     }
 
+    pub fn drawLine(self: @This(), params: DrawLineParameters) void {
+        self.api.drawLine(params.start.x, params.start.y, params.end.x, params.end.y, params.thickness, @intCast(@intFromEnum(params.color)));
+    }
+
     pub fn drawLines(self: @This(), params: DrawLinesParameters) void {
         const t = Transformer{
             .org = params.origin,
@@ -100,7 +112,12 @@ pub const PlaydateGraphics = struct {
             const v0 = t.apply(points[i]).toVector2i();
             const v1 = t.apply(points[(i + 1) % points.len]).toVector2i();
 
-            self.api.drawLine(v0.x, v0.y, v1.x, v1.y, params.thickness, @intFromEnum(pdapi.LCDSolidColor.ColorWhite));
+            self.drawLine(.{
+                .start = v0,
+                .end = v1,
+                .thickness = params.thickness,
+                .color = params.color,
+            });
         }
     }
 };

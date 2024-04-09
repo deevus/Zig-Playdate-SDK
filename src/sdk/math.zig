@@ -8,6 +8,10 @@ pub const Vector2 = struct {
         return .{ .x = x, .y = y };
     }
 
+    pub fn clone(self: @This()) Vector2 {
+        return Vector2.init(self.x, self.y);
+    }
+
     pub fn scale(self: @This(), s: f32) Vector2 {
         return .{ .x = self.x * s, .y = self.y * s };
     }
@@ -61,3 +65,33 @@ pub const Vector2i = struct {
         return Vector2.init(@floatFromInt(self.x), @floatFromInt(self.y));
     }
 };
+
+pub fn scale(v: *Vector2, s: f32) void {
+    v.x = v.x * s;
+    v.y = v.y * s;
+}
+
+pub fn rotate(v: *Vector2, angle: f32) void {
+    const c = std.math.cos(angle);
+    const s = std.math.sin(angle);
+
+    v.x = v.x * c - v.y * s;
+    v.y = v.x * s + v.y * c;
+}
+
+pub fn add(v: *Vector2, other: Vector2) void {
+    v.x = v.x + other.x;
+    v.y = v.y + other.y;
+}
+
+pub fn subtract(v: *Vector2, other: Vector2) void {
+    v.x = v.x - other.x;
+    v.y = v.y - other.y;
+}
+
+pub fn normalize(v: *Vector2) void {
+    const len = std.math.sqrt(v.x * v.x + v.y * v.y);
+
+    v.x = v.x / len;
+    v.y = v.y / len;
+}
