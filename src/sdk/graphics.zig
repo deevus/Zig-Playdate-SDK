@@ -92,7 +92,7 @@ pub const PlaydateGraphics = struct {
     pub fn drawCircle(self: @This(), params: DrawCircleParameters) void {
         const circumference = if (params.radius) |r| r * 2 else 2;
 
-        self.api.fillEllipse(params.position.x, params.position.y, circumference, circumference, 0, 360, @intFromEnum(pdapi.LCDSolidColor.ColorWhite));
+        self.api.fillEllipse(params.position.x, params.position.y, circumference, circumference, 0.0, 360.0, @intCast(@intFromEnum(params.color)));
     }
 
     pub fn drawLine(self: @This(), params: DrawLineParameters) void {
