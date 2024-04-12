@@ -37,4 +37,12 @@ pub const System = struct {
 
         return pressed & @intFromEnum(button) != 0;
     }
+
+    pub fn getElapsedTime(self: @This()) f32 {
+        return self.api.getElapsedTime();
+    }
+
+    pub fn getCurrentTimeMilliseconds(self: @This()) u32 {
+        return @intCast(self.api.getCurrentTimeMilliseconds());
+    }
 };
