@@ -1,6 +1,6 @@
 const std = @import("std");
-const pdapi = @import("playdate_api_definitions.zig");
 
+pub const pdapi = @import("playdate_api_definitions.zig");
 pub const sound = @import("sound.zig");
 pub const mem = @import("mem.zig");
 pub const graphics = @import("graphics.zig");
