@@ -33,8 +33,12 @@ pub const Vector2 = struct {
         return .{ .x = self.x - other.x, .y = self.y - other.y };
     }
 
+    pub fn length(self: @This()) f32 {
+        return std.math.sqrt(self.x * self.x + self.y * self.y);
+    }
+
     pub fn normalize(self: @This()) Vector2 {
-        const len = std.math.sqrt(self.x * self.x + self.y * self.y);
+        const len = self.length();
         return .{ .x = self.x / len, .y = self.y / len };
     }
 
