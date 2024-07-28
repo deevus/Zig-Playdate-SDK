@@ -60,6 +60,14 @@ const DrawLinesParameters = struct {
     color: pdapi.LCDSolidColor = .ColorBlack,
 };
 
+const DrawBitmapParameters = struct {
+    bitmap: Bitmap,
+    position: Vector2i,
+    rotation: f32 = 0.0,
+    center: Vector2 = .{ .x = 0.5, .y = 0.5 },
+    scale: Vector2 = Vector2.one(),
+};
+
 pub const PlaydateGraphics = struct {
     api: *const pdapi.PlaydateGraphics,
     text_encoding: pdapi.PDStringEncoding = .UTF8Encoding,
@@ -87,6 +95,19 @@ pub const PlaydateGraphics = struct {
 
     pub fn drawBitmap(self: @This(), bitmap: Bitmap, pos: Vector2i) void {
         self.api.drawBitmap(bitmap.bitmap, pos.x, pos.y, bitmap.flip);
+    }
+
+    pub fn drawBitmapEx(self: @This(), params: DrawBitmapParameters) void {
+        self.api.drawRotatedBitmap(
+            params.bitmap.bitmap,
+            params.position.x,
+            params.position.y,
+            params.rotation,
+            params.center.x,
+            params.center.y,
+            params.scale.x,
+            params.scale.y,
+        );
     }
 
     pub fn drawCircle(self: @This(), params: DrawCircleParameters) void {

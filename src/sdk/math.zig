@@ -51,6 +51,14 @@ pub const Vector2 = struct {
 
         return Vector2i.init(xi, yi);
     }
+
+    pub fn zero() Vector2 {
+        return Vector2.init(0.0, 0.0);
+    }
+
+    pub fn one() Vector2 {
+        return Vector2.init(1.0, 1.0);
+    }
 };
 
 pub const Vector2i = struct {
