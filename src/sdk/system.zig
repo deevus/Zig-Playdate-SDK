@@ -45,4 +45,12 @@ pub const System = struct {
     pub fn getCurrentTimeMilliseconds(self: @This()) u32 {
         return @intCast(self.api.getCurrentTimeMilliseconds());
     }
+
+    pub fn getCrankAngle(self: @This()) f32 {
+        return self.api.getCrankAngle();
+    }
+
+    pub fn getCrankChange(self: @This()) f32 {
+        return self.api.getCrankChange();
+    }
 };
