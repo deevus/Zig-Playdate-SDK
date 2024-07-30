@@ -32,6 +32,29 @@ pub const Bitmap = struct {
     }
 };
 
+pub const BitmapTable = struct {
+    api: *const pdapi.PlaydateGraphics,
+    bitmap_table: *pdapi.LCDBitmapTable,
+
+    pub fn init(graphics_api: *const pdapi.PlaydateGraphics, name: []const u8) BitmapTable {
+        return .{
+            .api = graphics_api,
+            .bitmap_table = graphics_api.loadBitmapTable(name.ptr, null).?,
+        };
+    }
+
+    pub fn getBitmap(self: @This(), index: usize) Bitmap {
+        return Bitmap{
+            .api = self.api,
+            .bitmap = self.api.getTableBitmap(self.bitmap_table, @intCast(index)).?,
+        };
+    }
+
+    pub fn deinit(self: @This()) void {
+        self.api.freeBitmapTable(self.bitmap_table);
+    }
+};
+
 const ClearScreenOptions = union(enum) {
     color: pdapi.LCDSolidColor,
     pattern: *pdapi.LCDPattern,
@@ -140,5 +163,12 @@ pub const PlaydateGraphics = struct {
                 .color = params.color,
             });
         }
+    }
+
+    /// Loads a bitmap table from a file given the bitmap table naming convention.
+    /// E.g. "bitmap" will load the file "bitmap-table-{x}-{y}.png"
+    /// where x and y are the height and width of each bitmap in the table.
+    pub fn loadBitmapTable(self: @This(), name: []const u8) BitmapTable {
+        return BitmapTable.init(self.api, name);
     }
 };
