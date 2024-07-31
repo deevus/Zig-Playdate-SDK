@@ -7,6 +7,7 @@ pub const graphics = @import("graphics.zig");
 pub const math = @import("math.zig");
 pub const system = @import("system.zig");
 pub const debug = @import("debug.zig");
+pub const sprite = @import("sprite.zig");
 
 pub const Playdate = struct {
     api: *const pdapi.PlaydateAPI,
@@ -15,6 +16,7 @@ pub const Playdate = struct {
     system: system.System,
     mem: mem.Memory,
     debug: debug.Debug,
+    sprite: sprite.Sprite,
 
     pub fn init(api: *const pdapi.PlaydateAPI) Playdate {
         return .{
@@ -24,6 +26,7 @@ pub const Playdate = struct {
             .system = system.System.init(api.system),
             .mem = mem.Memory.init(api.system),
             .debug = debug.Debug.init(api.system),
+            .sprite = sprite.Sprite.init(api.sprite),
         };
     }
 };
