@@ -63,6 +63,13 @@ pub const Vector2 = struct {
     pub fn one() Vector2 {
         return Vector2.init(1.0, 1.0);
     }
+
+    pub fn dot(self: @This(), other: Vector2) Vector2 {
+        return .{
+            .x = self.x * other.x,
+            .y = self.y * other.y,
+        };
+    }
 };
 
 pub const Vector2i = struct {

@@ -201,8 +201,16 @@ pub const Sprite = struct {
         return self.api.checkCollisions(self.sprite, goal.x, goal.y, null, null, null);
     }
 
-    pub fn moveWithCollisions(self: @This(), goal: math.Vector2) pdapi.SpriteCollisionInfo {
-        return self.api.moveWithCollisions(self.sprite, goal.x, goal.y, null, null, null);
+    pub fn moveWithCollisions(self: @This(), goal: math.Vector2, actual: ?*math.Vector2) ?[]pdapi.SpriteCollisionInfo {
+        var len: c_int = 0;
+
+        const results = self.api.moveWithCollisions(self.sprite, goal.x, goal.y, &actual.?.x, &actual.?.y, &len);
+
+        if (results != null) {
+            return results[0..@intCast(len)];
+        }
+
+        return null;
     }
 
     pub fn deinit(self: @This()) void {
@@ -219,6 +227,10 @@ pub const PlaydateSprite = struct {
 
     pub fn newSprite(self: @This()) Sprite {
         return Sprite.init(self.api);
+    }
+
+    pub fn drawSprites(self: @This()) void {
+        self.api.drawSprites();
     }
 
     pub fn querySpritesAtPoint(self: @This(), point: math.Vector2) []pdapi.LCDSprite {

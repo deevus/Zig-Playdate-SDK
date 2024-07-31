@@ -16,7 +16,7 @@ pub const Playdate = struct {
     system: system.System,
     mem: mem.Memory,
     debug: debug.Debug,
-    sprite: sprite.Sprite,
+    sprite: sprite.PlaydateSprite,
 
     pub fn init(api: *const pdapi.PlaydateAPI) Playdate {
         return .{
@@ -26,7 +26,7 @@ pub const Playdate = struct {
             .system = system.System.init(api.system),
             .mem = mem.Memory.init(api.system),
             .debug = debug.Debug.init(api.system),
-            .sprite = sprite.Sprite.init(api.sprite),
+            .sprite = sprite.PlaydateSprite.init(api.sprite),
         };
     }
 };

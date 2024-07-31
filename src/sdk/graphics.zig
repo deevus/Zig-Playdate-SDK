@@ -171,4 +171,8 @@ pub const PlaydateGraphics = struct {
     pub fn loadBitmapTable(self: @This(), name: []const u8) BitmapTable {
         return BitmapTable.init(self.api, name);
     }
+
+    pub fn setDrawOffset(self: @This(), position: math.Vector2i) void {
+        self.api.setDrawOffset(position.x, position.y);
+    }
 };
