@@ -64,11 +64,15 @@ pub const Vector2 = struct {
         return Vector2.init(1.0, 1.0);
     }
 
-    pub fn dot(self: @This(), other: Vector2) Vector2 {
+    pub fn multiply(self: @This(), other: Vector2) Vector2 {
         return .{
             .x = self.x * other.x,
             .y = self.y * other.y,
         };
+    }
+
+    pub fn dot(self: @This(), other: Vector2) f32 {
+        return self.x * other.x + self.y * other.y;
     }
 };
 
