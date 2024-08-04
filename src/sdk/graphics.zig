@@ -88,7 +88,7 @@ const DrawBitmapParameters = struct {
     position: Vector2i,
     rotation: f32 = 0.0,
     center: Vector2 = .{ .x = 0.5, .y = 0.5 },
-    scale: Vector2 = Vector2.one(),
+    scale: Vector2 = Vector2.ONE,
 };
 
 pub const PlaydateGraphics = struct {

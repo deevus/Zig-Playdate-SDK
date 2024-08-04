@@ -38,7 +38,7 @@ pub const Sprite = struct {
     }
 
     pub fn getPosition(self: @This()) math.Vector2 {
-        var position = math.Vector2.zero();
+        var position = math.Vector2.ZERO();
 
         self.api.getPosition(self.sprite, &position.x, &position.y);
 
@@ -50,7 +50,7 @@ pub const Sprite = struct {
     }
 
     pub fn getCenter(self: @This()) math.Vector2 {
-        var center = math.Vector2.zero();
+        var center = math.Vector2.ZERO();
 
         self.api.getCenter(self.sprite, &center.x, &center.y);
 
