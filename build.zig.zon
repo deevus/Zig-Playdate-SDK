@@ -1,6 +1,6 @@
 .{
-    .name = .zig_playdate_sdk,
-    .fingerprint = 0x8e40c9fe5a5fd028,
+    .name = .playdate_sdk,
+    .fingerprint = 0xc15dd8d051942175,
     .version = "0.0.1",
     .paths = .{""},
 }
