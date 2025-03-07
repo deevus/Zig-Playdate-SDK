@@ -5,6 +5,7 @@ const name = "example";
 pub fn build(b: *std.Build) !void {
     const pdx_file_name = name ++ ".pdx";
     const optimize = b.standardOptimizeOption(.{});
+    const target = b.standardTargetOptions(.{});
 
     const writer = b.addWriteFiles();
     const source_dir = writer.getDirectory();
@@ -16,7 +17,7 @@ pub fn build(b: *std.Build) !void {
         .name = "pdex",
         .root_source_file = main_path,
         .optimize = optimize,
-        .target = b.host,
+        .target = target,
     });
     _ = writer.addCopyFile(lib.getEmittedBin(), "pdex" ++ switch (os_tag) {
         .windows => ".dll",
@@ -25,7 +26,7 @@ pub fn build(b: *std.Build) !void {
         else => @panic("Unsupported OS"),
     });
 
-    const playdate_target = b.resolveTargetQuery(try std.zig.CrossTarget.parse(.{
+    const playdate_target = b.resolveTargetQuery(try std.Target.Query.parse(.{
         .arch_os_abi = "thumb-freestanding-eabihf",
         .cpu_features = "cortex_m7+vfp4d16sp",
     }));
@@ -38,8 +39,8 @@ pub fn build(b: *std.Build) !void {
     });
     elf.link_emit_relocs = true;
     elf.entry = .{ .symbol_name = "eventHandler" };
+    elf.linker_script = b.path("link_map.ld");
 
-    elf.setLinkerScriptPath(b.path("link_map.ld"));
     if (optimize == .ReleaseFast) {
         elf.root_module.omit_frame_pointer = true;
     }
@@ -57,7 +58,7 @@ pub fn build(b: *std.Build) !void {
     };
 
     const pdc = b.addSystemCommand(&.{pdc_path});
-    pdc.addDirectorySourceArg(source_dir);
+    pdc.addDirectoryArg(source_dir);
     pdc.setName("pdc");
     const pdx = pdc.addOutputFileArg(pdx_file_name);
 
@@ -73,7 +74,7 @@ pub fn build(b: *std.Build) !void {
     });
 
     const run_cmd = b.addSystemCommand(&.{pd_simulator_path});
-    run_cmd.addDirectorySourceArg(pdx);
+    run_cmd.addDirectoryArg(pdx);
     run_cmd.setName("PlaydateSimulator");
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
@@ -81,10 +82,10 @@ pub fn build(b: *std.Build) !void {
 
     const clean_step = b.step("clean", "Clean all artifacts");
     clean_step.dependOn(b.getUninstallStep());
-    clean_step.dependOn(&b.addRemoveDirTree("zig-cache").step);
-    clean_step.dependOn(&b.addRemoveDirTree("zig-out").step);
+    clean_step.dependOn(&b.addRemoveDirTree(b.path("zig-cache")).step);
+    clean_step.dependOn(&b.addRemoveDirTree(b.path("zig-out")).step);
 
-    _ = b.addModule("playdate", .{ .root_source_file = b.path("src/sdk/playdate.zig"), .target = b.host, .optimize = optimize });
+    _ = b.addModule("playdate", .{ .root_source_file = b.path("src/sdk/playdate.zig"), .target = target, .optimize = optimize });
 }
 
 pub fn addCopyDirectory(
